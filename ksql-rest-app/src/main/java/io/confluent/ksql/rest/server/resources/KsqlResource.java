@@ -39,6 +39,7 @@ import io.confluent.ksql.rest.entity.SourceDescriptionEntity;
 import io.confluent.ksql.rest.entity.SourceDescriptionList;
 import io.confluent.ksql.rest.entity.SourceInfo;
 import io.confluent.ksql.rest.entity.Versions;
+import io.confluent.ksql.util.StatementWithInferredSchema;
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.misc.Interval;
 import org.slf4j.LoggerFactory;
@@ -248,12 +249,12 @@ public class KsqlResource {
         || statement instanceof CreateAsSelect
         || statement instanceof InsertInto
         || statement instanceof TerminateQuery) {
-      Statement statementWithSchema = maybeAddFieldsFromSchemaRegistry(
-          statement, streamsProperties);
+      final StatementWithInferredSchema statementWithSchema
+          = StatementWithInferredSchema.forStatement(
+              statement, statementText, streamsProperties, ksqlEngine.getSchemaRegistryClient());
       getStatementExecutionPlan(
-          statementWithSchema,
-          statementWithSchema == statement
-              ? statementText : SqlFormatter.formatSql(statementWithSchema),
+          statementWithSchema.getStatement(),
+          statementWithSchema.getStatementText(),
           streamsProperties);
     } else {
       throw new KsqlRestException(
@@ -322,12 +323,13 @@ public class KsqlResource {
                || statement instanceof InsertInto
                || statement instanceof TerminateQuery
     ) {
-      Statement statementWithSchema = maybeAddFieldsFromSchemaRegistry(
-          statement, streamsProperties);
+      final StatementWithInferredSchema statementWithSchema
+          = StatementWithInferredSchema.forStatement(
+              statement, statementText, streamsProperties, ksqlEngine.getSchemaRegistryClient());
       return distributeStatement(
-          statementWithSchema == statement
-              ? statementText : SqlFormatter.formatSql(statementWithSchema),
-          statement, streamsProperties);
+          statementWithSchema.getStatementText(),
+          statementWithSchema.getStatement(),
+          streamsProperties);
     } else if (statement instanceof ShowFunctions) {
       return listFunctions(statementText);
     } else if (statement instanceof DescribeFunction) {

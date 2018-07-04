@@ -158,7 +158,6 @@ public class KsqlResourceTest {
     public static KsqlResource get(KsqlEngine ksqlEngine) {
       Properties defaultKsqlConfig = getDefaultKsqlConfig();
 
-      // Map<String, Object> commandConsumerProperties = config.getCommandConsumerProperties();
       KafkaConsumer<CommandId, Command> commandConsumer = new TestCommandConsumer<>(
           defaultKsqlConfig,
           getJsonDeserializer(CommandId.class, true),

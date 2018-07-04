@@ -118,7 +118,7 @@ public final class ExpressionFormatter {
       return "STRUCT<" + Joiner.on(", ").join(node.getItems().stream()
                                                 .map((child) ->
                                                          child.getLeft()
-                                                         + process(child.getRight(), unmangleNames))
+                                                         + " " + process(child.getRight(), unmangleNames))
                                                 .collect(toList())) + ">";
     }
 
